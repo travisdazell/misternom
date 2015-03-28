@@ -19,7 +19,7 @@ import travisdazell.net.misternom.framework.Screen;
 /**
  * Created by Travis_Dazell on 3/25/2015.
  */
-public class AndroidGame extends Activity implements Game {
+public abstract class AndroidGame extends Activity implements Game {
     AndroidFastRenderView renderView;
     Graphics graphics;
     Audio audio;
@@ -33,22 +33,24 @@ public class AndroidGame extends Activity implements Game {
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
-
         int frameBufferWidth = isLandscape ? 480 : 320;
         int frameBufferHeight = isLandscape ? 320 : 480;
+        Bitmap frameBuffer = Bitmap.createBitmap(frameBufferWidth,
+                frameBufferHeight, Bitmap.Config.RGB_565);
 
-        Bitmap frameBuffer = Bitmap.createBitmap(frameBufferWidth, frameBufferHeight, Bitmap.Config.RGB_565);
-        float scaleX = (float) frameBufferWidth / getWindowManager().getDefaultDisplay().getWidth();
-        float scaleY = (float) frameBufferHeight / getWindowManager().getDefaultDisplay().getHeight();
+        float scaleX = (float) frameBufferWidth
+                / getWindowManager().getDefaultDisplay().getWidth();
+        float scaleY = (float) frameBufferHeight
+                / getWindowManager().getDefaultDisplay().getHeight();
 
         renderView = new AndroidFastRenderView(this, frameBuffer);
         graphics = new AndroidGraphics(getAssets(), frameBuffer);
-        fileIO = new AndroidFileIO(this);
+        fileIO = new AndroidFileIO(getAssets());
         audio = new AndroidAudio(this);
-
         input = new AndroidInput(this, renderView, scaleX, scaleY);
         screen = getStartScreen();
         setContentView(renderView);
@@ -58,14 +60,22 @@ public class AndroidGame extends Activity implements Game {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        wakeLock.acquire();
+        screen.resume();
+        renderView.resume();
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
         wakeLock.release();
         renderView.pause();
         screen.pause();
-        if (isFinishing()) {
+
+        if (isFinishing())
             screen.dispose();
-        }
     }
 
     @Override
@@ -90,9 +100,8 @@ public class AndroidGame extends Activity implements Game {
 
     @Override
     public void setScreen(Screen screen) {
-        if (screen == null) {
+        if (screen == null)
             throw new IllegalArgumentException("Screen must not be null");
-        }
 
         this.screen.pause();
         this.screen.dispose();
@@ -101,13 +110,7 @@ public class AndroidGame extends Activity implements Game {
         this.screen = screen;
     }
 
-    @Override
     public Screen getCurrentScreen() {
         return screen;
-    }
-
-    @Override
-    public Screen getStartScreen() {
-        return null;
     }
 }

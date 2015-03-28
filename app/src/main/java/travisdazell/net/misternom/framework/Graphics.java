@@ -5,9 +5,7 @@ package travisdazell.net.misternom.framework;
  */
 public interface Graphics {
     public static enum PixmapFormat {
-        RGB8888,
-        ARGB4444,
-        ARGB565
+        ARGB8888, ARGB4444, RGB565
     }
 
     public Pixmap newPixmap(String fileName, PixmapFormat format);
@@ -20,7 +18,8 @@ public interface Graphics {
 
     public void drawRect(int x, int y, int width, int height, int color);
 
-    public void drawPixmap(Pixmap pixmap, int x, int y, int srcX, int srcY, int srcWidth, int srcHeight);
+    public void drawPixmap(Pixmap pixmap, int x, int y, int srcX, int srcY,
+                           int srcWidth, int srcHeight);
 
     public void drawPixmap(Pixmap pixmap, int x, int y);
 
